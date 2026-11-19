@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "docx-agent-kit"
+version = "1.0.0"
+description = "python-docx helpers for hyperlinks, fields, lists, tables, images, templates and clean-up"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["python-docx>=1.2.0", "lxml>=5.0"]
+
+[project.scripts]
+docx-agent-kit = "docx_agent_kit.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["docx_agent_kit*"]
