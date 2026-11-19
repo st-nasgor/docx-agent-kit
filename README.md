@@ -1,7 +1,8 @@
 # docx-agent-kit
 
 One importable Python toolkit that fills the gaps in `python-docx`, packaged as
-an [OpenCode](https://opencode.ai) skill so coding agents use it automatically.
+an agent skill for [OpenCode](https://opencode.ai) and Claude Code so coding
+agents use it automatically.
 
 It covers the things `python-docx` has no public API for: hyperlinks, Word
 fields, real bullet/numbered lists, table borders and shading, image swaps,
@@ -15,50 +16,59 @@ removal, and header/footer/section switches.
 
 ## Install
 
+The repository can live anywhere — a code folder, a temp directory, wherever
+you keep things. The installer is what decides where the *skill* goes: it
+detects OpenCode or Claude Code and copies the skill into the skills directory
+that agent already reads, then pip-installs the package from that installed
+copy.
+
+| Target | Default directory |
+|---|---|
+| OpenCode (global) | `~/.config/opencode/skills` (`%USERPROFILE%\.config\opencode\skills` on Windows) |
+| Claude Code (global) | `~/.claude/skills` |
+| Project-local | pass `--skills-dir .opencode/skills` or `.claude/skills` |
+
+You can force a target with `--agent opencode` / `--agent claude`, or point at
+any directory with `--skills-dir`.
+
 ### For AI agents (copy this prompt)
 
 ```text
-Install https://github.com/st-nasgor/docx-agent-kit for my OpenCode.
+Install https://github.com/st-nasgor/docx-agent-kit for my agent.
 
-1. Clone the repo to a permanent folder, for example ~/Documents/docx-agent-kit.
+1. Clone or download the repo anywhere convenient. Do not treat that folder
+   as the install location.
 2. Windows: run `powershell -ExecutionPolicy Bypass -File install.ps1`.
    macOS/Linux: run `./install.sh`.
-3. The script pip-installs the package and links the skill into
-   ~/.config/opencode/skills/docx-agent-kit.
-4. Verify with `python -m docx_agent_kit inspect <some.docx>` and confirm the
-   skill named docx-agent-kit is available.
+   The installer detects OpenCode or Claude Code and installs the skill into
+   that agent's skills directory (`~/.config/opencode/skills` or
+   `~/.claude/skills`). Use `--skills-dir` for a project-local install.
+3. Verify with `python -m docx_agent_kit inspect <some.docx>` and confirm the
+   skill named docx-agent-kit is available in the agent.
 ```
 
-The installer is idempotent: re-run it after `git pull` if the link is ever
-missing.
+The installer replaces a previous copy and is safe to re-run. Use `--link` if
+you want the skills directory to point at the repository instead of copying
+(handy while developing the kit).
 
 ### Manual install
 
 ```bash
 git clone https://github.com/st-nasgor/docx-agent-kit.git
 cd docx-agent-kit
-python -m pip install -e .
+./install.sh                 # macOS / Linux
 ```
-
-Then link or copy this folder to the OpenCode global skills directory:
-
-| Platform | Skill directory |
-|---|---|
-| Windows | `%USERPROFILE%\.config\opencode\skills\docx-agent-kit` |
-| macOS / Linux | `~/.config/opencode/skills/docx-agent-kit` |
 
 ```powershell
-# Windows (junction, no admin required)
-New-Item -ItemType Junction -Path "$env:USERPROFILE\.config\opencode\skills\docx-agent-kit" -Target (Get-Location)
-```
-
-```bash
-# macOS / Linux
-ln -s "$PWD" ~/.config/opencode/skills/docx-agent-kit
+powershell -ExecutionPolicy Bypass -File install.ps1   # Windows
 ```
 
 OpenCode discovers `~/.config/opencode/skills` automatically and advertises the
-skill by its `description`; no config entry is needed.
+skill by its `description`; no config entry is needed. Claude Code reads
+`~/.claude/skills` the same way.
+
+If you installed by copying and later pull changes, re-run the installer to
+refresh the installed skill.
 
 ## Quick start
 
