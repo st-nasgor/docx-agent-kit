@@ -37,6 +37,10 @@ LibreOffice helpers, and this pack for construction.
 | Any field | `dk.add_field(paragraph, "PAGE \\* MERGEFORMAT", result="1")` |
 | TOC | `dk.add_toc(paragraph, levels="1-3")` |
 | Refresh on open | `dk.update_fields(document)` (also repairs the zoom bug) |
+| New section (safe) | `sec = dk.new_section(doc)` — clears inherited titlePg |
+| Footer page number | `dk.set_footer_page_number(section)` |
+| Page number restart / format | `dk.set_page_number_start(section, 1, fmt="lowerRoman")` |
+| Paragraph starts a page | `dk.page_break_before(paragraph)` |
 | Bullets / numbers | `num = dk.new_list(doc, "bullet"); dk.add_item(doc, "Text", num, level=0)` |
 | Table borders | `dk.set_table_borders(table, color="BFBFBF")` |
 | Cell fill | `dk.set_cell_shading(cell, "FFF2CC")` |

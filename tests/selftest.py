@@ -165,6 +165,23 @@ def main():
     check("titlePg set", doc.sections[0]._sectPr.find(qn("w:titlePg")) is not None)
     check("even/odd set", doc.settings.element.find(qn("w:evenAndOddHeaders")) is not None)
     check("page start set", doc.sections[0]._sectPr.find(qn("w:pgNumType")) is not None)
+    dk.set_page_number_start(doc.sections[0], 3, fmt="lowerRoman")
+    pgnum = doc.sections[0]._sectPr.find(qn("w:pgNumType"))
+    check("page fmt set", pgnum is not None and pgnum.get(qn("w:fmt")) == "lowerRoman")
+
+    # 8b. section helpers: new_section clears inherited titlePg, footer PAGE field
+    sec_doc = Document()
+    dk.set_different_first_page(sec_doc.sections[0], True)
+    sec2 = dk.new_section(sec_doc)
+    check("new_section titlePg cleared", sec2._sectPr.find(qn("w:titlePg")) is None)
+    dk.set_footer_page_number(sec2)
+    check("footer unlinked", sec2.footer.is_linked_to_previous is False)
+    check("footer page field", "PAGE" in sec2.footer.paragraphs[0]._p.xml)
+    centered = sec2.footer.paragraphs[0].alignment
+    check("footer centered", centered is not None and int(centered) == 1, centered)
+    break_para = sec_doc.add_paragraph("Next chapter")
+    dk.page_break_before(break_para)
+    check("page_break_before", break_para.paragraph_format.page_break_before is True)
 
     # 9. merge runs
     merge_paragraph = doc.add_paragraph()

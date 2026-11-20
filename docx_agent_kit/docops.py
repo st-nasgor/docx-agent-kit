@@ -6,9 +6,12 @@ section-level flags.
 """
 
 from lxml import etree
+from docx.enum.section import WD_SECTION_START
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 
+from .fields import add_page_number
 from .oxml import (
     make,
     remove,
@@ -139,18 +142,69 @@ def repair_settings(document):
     return settings
 
 
-def set_page_number_start(section, start):
-    """Restart page numbering at *start* for this section."""
+def set_page_number_start(section, start, fmt=None):
+    """Restart page numbering at *start* for this section.
+
+    fmt: OOXML ST_NumberFormat, e.g. "decimal", "lowerRoman",
+    "upperRoman", "lowerLetter". Roman numerals are the usual choice
+    for front matter that restarts at 1 in the body.
+    """
     sectPr = section._sectPr
     existing = sectPr.find(qn("w:pgNumType"))
     if existing is not None:
         sectPr.remove(existing)
-    node = make("w:pgNumType", **{"w:start": start})
+    attrs = {"w:start": start}
+    if fmt:
+        attrs["w:fmt"] = fmt
+    node = make("w:pgNumType", **attrs)
     insert_ordered(sectPr, node, [
         "w:cols", "w:formProt", "w:vAlign", "w:noEndnote", "w:titlePg",
         "w:textDirection", "w:bidi", "w:rtlGutter", "w:docGrid",
         "w:printerSettings", "w:sectPrChange",
     ])
+
+
+def new_section(document, start=WD_SECTION_START.NEW_PAGE, clear_first_page=True):
+    """Add a section and return it.
+
+    python-docx's add_section clones the previous sectPr, including
+    w:titlePg. When the first section has "different first page" (for a
+    cover page), the new section silently inherits it, so its first page
+    uses the empty first-page footer and loses its page number.
+    clear_first_page=True removes the inherited w:titlePg.
+    """
+    section = document.add_section(start)
+    if clear_first_page:
+        set_different_first_page(section, False)
+    return section
+
+
+def page_break_before(paragraph, value=True):
+    """Start *paragraph* on a fresh page.
+
+    Prefer this over an empty paragraph holding only a page-break run:
+    when the preceding content already fills its page, that carrier
+    paragraph lands on the next page and renders as a blank page.
+    """
+    paragraph.paragraph_format.page_break_before = value
+    return paragraph
+
+
+def set_footer_page_number(section, align="center"):
+    """Unlink the section footer and put a centered PAGE field in it.
+
+    A PAGE field in a footer only renders when the footer part exists;
+    a linked footer with no field shows nothing. Roman numeral display
+    comes from set_page_number_start(section, ..., fmt="lowerRoman").
+    """
+    footer = section.footer
+    footer.is_linked_to_previous = False
+    paragraph = footer.paragraphs[0]
+    if align == "center":
+        paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    elif align:
+        paragraph.alignment = align
+    return add_page_number(paragraph)
 
 
 def strip_comments_and_changes(document):

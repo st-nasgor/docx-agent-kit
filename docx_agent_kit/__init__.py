@@ -25,9 +25,12 @@ from .blocks import (
 from .docops import (
     accept_all_changes,
     merge_runs,
+    new_section,
+    page_break_before,
     repair_settings,
     set_different_first_page,
     set_even_odd_headers,
+    set_footer_page_number,
     set_page_number_start,
     strip_comments,
     strip_comments_and_changes,
@@ -78,8 +81,9 @@ __all__ = [
     "merge_runs", "accept_all_changes", "strip_comments",
     "strip_comments_and_changes", "set_different_first_page",
     "set_even_odd_headers", "set_page_number_start", "repair_settings",
+    "new_section", "page_break_before", "set_footer_page_number",
     # template
     "render", "manifest_from_template", "inspect",
 ]
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"

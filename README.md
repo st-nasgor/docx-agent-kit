@@ -121,6 +121,10 @@ doc.save("out.docx")
 | Remove comments | `dk.strip_comments(doc)` |
 | First-page / even-odd headers | `dk.set_different_first_page`, `dk.set_even_odd_headers` |
 | Restart page numbers | `dk.set_page_number_start(section, 1)` |
+| New section (safe) | `sec = dk.new_section(doc)` — clears inherited titlePg |
+| Footer page number | `dk.set_footer_page_number(section)` |
+| Page number format | `dk.set_page_number_start(section, 1, fmt="lowerRoman")` |
+| Paragraph starts a page | `dk.page_break_before(paragraph)` |
 
 ## Templates
 
