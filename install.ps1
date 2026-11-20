@@ -23,7 +23,10 @@ param(
     [ValidateSet("auto", "opencode", "claude")]
     [string]$Agent = "auto",
     [string]$SkillsDir = "",
-    [switch]$Link
+    [switch]$Link,
+    # Also install Anthropic's document skills (docx, pdf, pptx, xlsx) with
+    # the Windows patches and Python dependencies they need.
+    [switch]$WithOfficeSkills
 )
 
 $ErrorActionPreference = "Stop"
@@ -104,4 +107,63 @@ Write-Host "  installing Python package..."
 if ($LASTEXITCODE -ne 0) { throw "pip install failed." }
 
 & python -c "import docx_agent_kit; print('  import ok: docx_agent_kit', docx_agent_kit.__version__)"
+
+if ($WithOfficeSkills) {
+    Write-Host ""
+    Write-Host "  --- office skills (docx, pdf, pptx, xlsx from anthropics/skills) ---"
+
+    $clone = Join-Path $env:TEMP "anthropic-skills"
+    if (Test-Path $clone) {
+        Write-Host "  updating anthropics/skills clone..."
+        git -C $clone pull --ff-only 2>$null | Out-Null
+    } else {
+        Write-Host "  cloning anthropics/skills..."
+        git clone --depth 1 https://github.com/anthropics/skills.git $clone | Out-Null
+    }
+    if (-not (Test-Path "$clone\skills")) { throw "Could not fetch anthropics/skills." }
+
+    $source = Join-Path $clone "skills"
+    foreach ($skill in @("docx", "pdf", "pptx", "xlsx")) {
+        $target = Join-Path $SkillsDir $skill
+        if (Test-Path $target) { Remove-Item $target -Recurse -Force }
+        Copy-Item (Join-Path $source $skill) $target -Recurse -Force
+        Write-Host "  installed: $target"
+    }
+
+    # Windows patches: the skills ship Linux-sandbox versions that fail here.
+    foreach ($skill in @("docx", "pptx", "xlsx")) {
+        Copy-Item (Join-Path $root "patches\soffice.py") (Join-Path $SkillsDir "$skill\scripts\office\soffice.py") -Force
+    }
+    Copy-Item (Join-Path $root "patches\recalc.py") (Join-Path $SkillsDir "xlsx\scripts\recalc.py") -Force
+    Write-Host "  patched: soffice.py (docx/pptx/xlsx), recalc.py (xlsx)"
+
+    # Insert a local-environment note after the first heading of each SKILL.md.
+    foreach ($skill in @("docx", "pdf", "pptx", "xlsx")) {
+        $noteFile = Join-Path $root "patches\notes\$skill.md"
+        $skillFile = Join-Path $SkillsDir "$skill\SKILL.md"
+        if (-not (Test-Path $noteFile) -or -not (Test-Path $skillFile)) { continue }
+        $note = (Get-Content $noteFile) -join "`n"
+        $lines = @(Get-Content $skillFile)
+        $heading = -1
+        for ($i = 0; $i -lt $lines.Count; $i++) {
+            if ($lines[$i] -match '^# ') { $heading = $i; break }
+        }
+        if ($heading -lt 0) { continue }
+        $already = $false
+        for ($i = $heading + 1; $i -lt [Math]::Min($heading + 4, $lines.Count); $i++) {
+            if ($lines[$i] -match 'Local environment note') { $already = $true }
+        }
+        if (-not $already) {
+            $new = $lines[0..$heading] + "" + $note + "" + $lines[($heading + 1)..($lines.Count - 1)]
+            [System.IO.File]::WriteAllText($skillFile, ($new -join "`n"), (New-Object System.Text.UTF8Encoding($false)))
+        }
+    }
+    Write-Host "  notes: SKILL.md local-environment notes applied"
+
+    Write-Host "  installing Python dependencies..."
+    & python -m pip install -q pypdf pdfplumber pillow python-pptx openpyxl pandas markitdown
+    if ($LASTEXITCODE -ne 0) { throw "pip install of office-skill dependencies failed." }
+    Write-Host "  deps: pypdf pdfplumber pillow python-pptx openpyxl pandas markitdown"
+}
+
 Write-Host "Done. Start a new agent session; the docx-agent-kit skill is now discoverable."

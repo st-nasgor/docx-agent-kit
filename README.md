@@ -47,6 +47,38 @@ Install https://github.com/st-nasgor/docx-agent-kit for my agent.
    skill named docx-agent-kit is available in the agent.
 ```
 
+### Full document stack (Claude's office skills)
+
+The kit works alone, but it is designed to sit alongside Anthropic's document
+skills (`docx`, `pdf`, `pptx`, `xlsx` from
+[anthropics/skills](https://github.com/anthropics/skills)), which cover PDF
+forms/merging, slide decks and spreadsheet recalculation. One flag installs
+the whole stack:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File install.ps1 -WithOfficeSkills
+```
+
+```bash
+./install.sh --with-office-skills
+```
+
+This copies the four skills into the same agent skills directory, installs
+their Python dependencies (`pypdf`, `pdfplumber`, `Pillow`, `python-pptx`,
+`openpyxl`, `pandas`, `markitdown`), and applies two patches from
+`patches/` in this repo:
+
+- `soffice.py` — Anthropic ships a Linux-sandbox version (bare `soffice` on
+  PATH, `LD_PRELOAD` socket shim needing gcc/`AF_UNIX`) that crashes on
+  Windows; the patch locates `soffice.com` under Program Files and skips the
+  shim.
+- `recalc.py` — same hard-coded `soffice` fix, so xlsx formula recalculation
+  works.
+
+The patched files are full copies of the current upstream versions; re-run
+the installer after an upstream update if the skills change significantly.
+Requires `git` on PATH (for the anthropics/skills clone).
+
 The installer replaces a previous copy and is safe to re-run. Use `--link` if
 you want the skills directory to point at the repository instead of copying
 (handy while developing the kit).
@@ -204,4 +236,7 @@ docx_agent_kit/
   template.py   render, manifest, inspect
   __main__.py   CLI
 tests/selftest.py
+patches/        Windows fixes for Anthropic's office skills (soffice.py, recalc.py)
+install.ps1     Windows installer (add -WithOfficeSkills for the full stack)
+install.sh      macOS/Linux installer (add --with-office-skills)
 ```
