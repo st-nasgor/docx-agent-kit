@@ -20,7 +20,7 @@ removal, and header/footer/section switches.
 - Package: `docx_agent_kit`
 - Skill ID: `docx-agent-kit`
 - Python: 3.10+
-- License: none declared yet
+- License: MIT (`LICENSE`)
 
 ## Install
 
