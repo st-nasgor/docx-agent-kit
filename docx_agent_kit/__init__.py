@@ -24,6 +24,7 @@ from .blocks import (
 )
 from .docops import (
     accept_all_changes,
+    humanize,
     merge_runs,
     new_section,
     page_break_before,
@@ -79,7 +80,7 @@ __all__ = [
     "add_picture", "list_images", "replace_inline_image", "replace_image_by_partname",
     # document ops
     "merge_runs", "accept_all_changes", "strip_comments",
-    "strip_comments_and_changes", "set_different_first_page",
+    "humanize", "strip_comments_and_changes", "set_different_first_page",
     "set_even_odd_headers", "set_page_number_start", "repair_settings",
     "new_section", "page_break_before", "set_footer_page_number",
     # template

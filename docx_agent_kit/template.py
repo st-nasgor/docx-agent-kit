@@ -6,7 +6,7 @@ from docx import Document
 from docx.oxml.ns import qn
 
 from . import blocks
-from .docops import accept_all_changes, repair_settings, strip_comments
+from .docops import accept_all_changes, humanize, repair_settings, strip_comments
 from .fields import update_fields
 
 
@@ -48,6 +48,7 @@ def render(template_path, payload, out_path=None, strict=False,
 
     out_path = out_path or str(Path(template_path).with_name(
         Path(template_path).stem + "-filled.docx"))
+    humanize(document)
     document.save(out_path)
     return out_path
 
