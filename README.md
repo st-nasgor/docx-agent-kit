@@ -4,6 +4,14 @@ One importable Python toolkit that fills the gaps in `python-docx`, packaged as
 an agent skill for [OpenCode](https://opencode.ai) and Claude Code so coding
 agents use it automatically.
 
+Search terms this project answers:
+`python-docx hyperlink` · `python-docx field PAGE DATE TOC` ·
+`python-docx bullet numbered list numbering` · `python-docx table borders shading` ·
+`python-docx merge cells` · `python-docx image placeholder replace` ·
+`python-docx template {{placeholders}} repeat block` · `python-docx merge split runs` ·
+`python-docx accept tracked changes strip comments` · `python-docx file looks like Word not python-docx` ·
+`python-docx human metadata author` · `docx template renderer static site editor` · `docx to pdf LibreOffice`
+
 It covers the things `python-docx` has no public API for: hyperlinks, Word
 fields, real bullet/numbered lists, table borders and shading, image swaps,
 template placeholders with repeatable blocks, tracked-change acceptance, comment
