@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "docx-agent-kit"
-version = "1.1.0"
+version = "1.1.1"
 description = "python-docx helpers for hyperlinks, fields, lists, tables, images, templates and clean-up"
 readme = "README.md"
 requires-python = ">=3.10"
